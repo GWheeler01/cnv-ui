@@ -1,59 +1,28 @@
 # The CNV-UI
-
-A short description about the project.
+This collection of scripts uses Bokeh to create portable, interactive plots for improved visualisation and interpretation of copy-number and loss-of-heterozygosity (CNV-LOH) results. It was originally designed for use for GATK outputs but can be used for any copy-number data if coerced into the proper JSON format.
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
-
-### Prerequisites
-
-The things you need before installing the software.
-
-* You need this
-* And you need this
-* Oh, and don't forget this
-
-### Installation
-
-A step by step guide that will tell you how to get the development environment up and running.
-
-```
-$ First step
-$ Another step
-$ Final step
-```
-
 ## Usage
 
-A few examples of useful commands and/or tasks.
+cnvloh2json.py: Called via main function. Requires GATK CNV denoised counts file, GATK CNV modeled segments file, and can optionally take GATK's LOH hets.tsv file.
 
 ```
-$ First example
-$ Second example
-$ And keep this in mind
+python cnvloh2json.py \
+--cnvloh-dir /path/to/output_dir/ \
+--counts-file /path/to/input_dir/sample_name.counts.tsv.denoisedCR.tsv \
+--modelsegs-file /path/to/input_dir/sample_name.modelFinal.seg \
+--hets-file /path/to/input_dir/sample_name.hets.tsv
 ```
 
 ## Deployment
 
 Additional notes on how to deploy this on a live or release system. Explaining the most important branches, what pipelines they trigger and how to update the database (if anything special).
 
-### Server
-
-* Live:
-* Release:
-* Development:
-
 ### Branches
 
-* Master:
-* Feature:
-* Bugfix:
-* etc...
+Currently just the one
 
 ## Additional Documentation and Acknowledgments
 
-* Project folder on server:
-* Confluence link:
-* Asana board:
-* etc...
+Acknowledge people here
