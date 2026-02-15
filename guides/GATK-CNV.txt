@@ -1,0 +1,5 @@
+# Model Segments:
+gatk ModelSegments \
+--denoised-copy-ratios hcc1143_T_clean.denoisedCR.tsv \
+--output sandbox/ \
+--output-prefix hcc1143_T_clean
