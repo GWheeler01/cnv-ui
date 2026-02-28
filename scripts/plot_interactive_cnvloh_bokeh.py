@@ -810,6 +810,7 @@ def focals_json_to_datasources(
     exon_color: str = "#CC6677",
     male_adjustment: bool = False,
 ):
+    print(f'Input focals dict: {focals_dict}')
     print("focals_json_to_datasources genes_list:")
     if genes_list is None:
         print("genes_list is None")
@@ -2477,21 +2478,25 @@ def generate_chrom_plot(
     stored_focals_datasource = None
     focal_effects_datasource = None
 
-    if focals_dict:
-        (
-            gene_focals_datasource,
-            exon_focals_datasource,
-            stored_focals_datasource,
-            focal_effects_datasource,
-        ) = focals_json_to_datasources(
-            focals_dict,
-            genome_info={chromosome: chrom_info_dict},
-            filter_to_chrom=chromosome,
-            genes_list=genes_list,
-            stdev_cutoff=default_sd_cutoff,
-            log2_cutoff=default_cnv_cutoff,
-            male_adjustment=male_adjustment,
-        )
+    if not focals_dict:
+        focals_input = {}
+    else:
+        focals_input = focals_dict
+
+    (
+        gene_focals_datasource,
+        exon_focals_datasource,
+        stored_focals_datasource,
+        focal_effects_datasource,
+    ) = focals_json_to_datasources(
+        focals_input,
+        genome_info={chromosome: chrom_info_dict},
+        filter_to_chrom=chromosome,
+        genes_list=genes_list,
+        stdev_cutoff=default_sd_cutoff,
+        log2_cutoff=default_cnv_cutoff,
+        male_adjustment=male_adjustment,
+    )
 
     gene_table_data = make_gene_table_data(
         genes_table,
@@ -3591,25 +3596,30 @@ def generate_genome_plot(
     # Focals data
 
     if focals_dict:
-        (
-            gene_focals_datasource,
-            exon_focals_datasource,
-            stored_focals_datasource,
-            focal_effects_datasource,
-        ) = focals_json_to_datasources(
-            focals_dict,
-            genome_info=genome_info,
-            genes_list=genes_list,
-            abs_position_dict=abs_position_dict,
-            stdev_cutoff=default_sd_cutoff,
-            log2_cutoff=default_cnv_cutoff,
-            male_adjustment=male_adjustment,
-        )
+        focals_input = focals_dict
     else:
-        gene_focals_datasource = None
-        exon_focals_datasource = None
-        stored_focals_datasource = None
-        focal_effects_datasource = None
+        focals_input = {}
+
+    (
+        gene_focals_datasource,
+        exon_focals_datasource,
+        stored_focals_datasource,
+        focal_effects_datasource,
+    ) = focals_json_to_datasources(
+        focals_input,
+        genome_info=genome_info,
+        genes_list=genes_list,
+        abs_position_dict=abs_position_dict,
+        stdev_cutoff=default_sd_cutoff,
+        log2_cutoff=default_cnv_cutoff,
+        male_adjustment=male_adjustment,
+    )
+    
+    #else:
+    #    gene_focals_datasource = None
+    #    exon_focals_datasource = None
+    #    stored_focals_datasource = None
+    #    focal_effects_datasource = None
 
     # Gene data table
     # This is the table made from the 'CNV_LOH.breakpoints.csv' data
