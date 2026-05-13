@@ -144,6 +144,8 @@ def cnvloh2json_segments_gatk(modeled_seg_file, cnv_subseg_file, loh_calls_file)
             alt_allele = seg_fields[5]
             var_id = f'{chrom}:{var_pos}_{ref_allele}>{alt_allele}'
             total_reads = ref_count + alt_count
+            if total_reads == 0:
+                continue
             ref_vaf = ref_count / total_reads
             alt_vaf = alt_count / total_reads
             b_allele_freq = min([ref_vaf, alt_vaf])
