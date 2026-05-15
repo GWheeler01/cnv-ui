@@ -365,6 +365,9 @@ def add_qc_dlrs(cnvloh_dict):
             prev_seg_index = seg_index
     dlrs = pd.DataFrame.from_records(dlrs_rows)
     print(dlrs)
+    # Note: The below line was erroring out due to the lack of spread. Probably due to no data entries present?
+    if 'spread' not in dlrs: 
+        return cnvloh_dict
     quant_25, quant_75 = dlrs['spread'].quantile([0.25, 0.75])
     dlrsiq = dlrs[(dlrs['spread'] > quant_25) & (dlrs['spread'] < quant_75)]
     cnvloh_dict['metadata']["der_logratio_spread"] = dlrs['spread'].std()/sqrt(2)
