@@ -37,13 +37,19 @@ def ci_from_pval(mean_val:float, p_val:float, ci_width:float=0.90):
     ci_upper = mean_val + z_score*std_err
     return ci_lower,ci_upper
 
-def cnvloh2json_segments_gatk(modeled_seg_file, cnv_subseg_file, loh_calls_file):
+def cnvloh2json_segments_gatk(modeled_seg_file, cnv_subseg_file, loh_calls_file, cnv_reads_file:str=None):
 
     seg_count = 0
     subseg_count = 0
     var_count = 0
     
     # reading in the files
+
+    print(f"Modeled Segments: {modeled_seg_file}")
+    print(f"CNV Denoised Subsegments: {cnv_subseg_file}")
+    print(f"CNV Read Counts: {cnv_reads_file}")
+    print(f"LOH Calls File: {loh_calls_file}")
+
     with open(modeled_seg_file, 'r') as modeled_seg_data:
         modeled_seg_lines = modeled_seg_data.readlines()
     with open(cnv_subseg_file, 'r') as cnv_subseg_data:
@@ -51,12 +57,12 @@ def cnvloh2json_segments_gatk(modeled_seg_file, cnv_subseg_file, loh_calls_file)
     with open(loh_calls_file, 'r') as loh_calls_data:
         loh_calls_lines = loh_calls_data.readlines()
         
-    if os.path.isfile(cnv_subseg_file.replace('.denoisedCR.tsv','')):
-        has_counts = True
-        with open(cnv_subseg_file.replace('.denoisedCR.tsv',''), 'r') as cnv_subseg_reads_data:
-            cnv_subseg_reads_lines = cnv_subseg_reads_data.readlines() 
-    else:
-        has_counts = False
+    #if os.path.isfile(cnv_subseg_file.replace('.denoisedCR.tsv','')):
+    #    has_counts = True
+    has_counts = cnv_reads_file is not None
+    if has_counts:
+        with open(cnv_reads_file, 'r') as cnv_subseg_reads_data:
+            cnv_subseg_reads_lines = cnv_subseg_reads_data.readlines()
     
     segment_array = []
     line_index = 0
@@ -375,12 +381,12 @@ def add_qc_dlrs(cnvloh_dict):
     cnvloh_dict['metadata']["dlrs_interquartile"] = dlrsiq['spread'].std()/sqrt(2)
     return cnvloh_dict
 
-def generate_cnvloh_json(sample_dir, sample_name, modeled_seg_file, cnv_subseg_file, loh_calls_file, data_type = "WES", case_name=None, cnv_params=None, software="GATK", software_version=None, sample_type=None):
+def generate_cnvloh_json(sample_dir, sample_name, modeled_seg_file, cnv_subseg_file, loh_calls_file, cnv_reads_file=None, data_type = "WES", case_name=None, cnv_params=None, software="GATK", software_version=None, sample_type=None):
     if (data_type.upper() == "WES" or data_type.upper() == "WGS") and software.upper() == "GATK":
         json_output_str = f'{sample_name}_cnvloh_output_{data_type}-GATK.json'
         min_seg_length=25000000
         max_loh = 0.1
-        segment_array = cnvloh2json_segments_gatk(modeled_seg_file, cnv_subseg_file, loh_calls_file)
+        segment_array = cnvloh2json_segments_gatk(modeled_seg_file, cnv_subseg_file, loh_calls_file, cnv_reads_file)
     elif (data_type.upper() == "WES" or data_type.upper() == "WGS") and software.upper() == "VARSCAN":
         json_output_str = f'{sample_name}_cnvloh_output_{data_type}-Varscan.json'
         segment_array = cnvloh2json_segments_varscan(modeled_seg_file, cnv_subseg_file, loh_calls_file)
@@ -408,7 +414,8 @@ def run_cnv2json_argparser():
     parser.add_argument('--sample-name', help="(Optional) Name of CNV-LOH sample being processed.", default='cnvloh_sample')
     parser.add_argument('--cnvloh-dir', help='Directory to output CNV-LOH JSON file.',required=True)
     parser.add_argument('--hets-file', help="Path to CNV-LOH *.hets.tsv File",default=None)
-    parser.add_argument('--counts-file', help="Path to CNV-LOH *.counts.tsv.denoisedCR.tsv",required=True)
+    parser.add_argument('--counts-file', help="Path to CNV-LOH *.counts.tsv",required=False)
+    parser.add_argument('--denoised-file', help="Path to CNV-LOH *.denoisedCR.tsv",required=True)
     parser.add_argument('--modelsegs-file', help="Path to CNV-LOH *.modelFinal.seg file",required=True)
     parser.add_argument('--sample-type', help='(Optional) Sample type -- typically Normal, Tumor, or Tumor_Normal', default=None)
     parser.add_argument('--case-name', help='(Optional) Name of the case to which the sample belongs.', default=None)
@@ -431,7 +438,8 @@ if __name__ == '__main__':
     cnv_params = args.parameters
     software_version = args.version
     modeled_seg_file = args.modelsegs_file
-    cnv_subseg_file = args.counts_file
+    cnv_subseg_file = args.denoised_file
     loh_calls_file = args.hets_file
     data_type = args.data_type
-    generate_cnvloh_json(sample_dir, sample_name, modeled_seg_file, cnv_subseg_file, loh_calls_file, data_type, case_name, cnv_params, software, software_version, sample_type)
+    cnv_reads_file = args.counts_file
+    generate_cnvloh_json(sample_dir, sample_name, modeled_seg_file, cnv_subseg_file, loh_calls_file, cnv_reads_file, data_type, case_name, cnv_params, software, software_version, sample_type)

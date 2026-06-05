@@ -3572,6 +3572,10 @@ def generate_genome_plot(
 
     for i in range(0, len(cnvloh_dna_dfs["seg_df"]["CHROM"])):
         current_chrom = cnvloh_dna_dfs["seg_df"]["CHROM"][i]
+        if current_chrom not in abs_position_dict:
+            print(f'{current_chrom} is not plottable.')
+            continue
+
         abs_adj_list.append(abs_position_dict[current_chrom])
         if male_adjustment is True and (
             "x" in current_chrom.lower() or "y" in current_chrom.lower()

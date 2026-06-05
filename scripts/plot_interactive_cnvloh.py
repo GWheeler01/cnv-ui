@@ -309,7 +309,7 @@ def downweight_excessive_vars(
         allele_weights = [1]
     else:
         prev_variant = variants.pop(0)
-        distance = abs(prev_variant["position"] - segment["position"]["start"])
+        distance = max(abs(prev_variant["position"] - segment["position"]["start"]),1)
         print(distance)
         allele_bafs.append(prev_variant["b_allele_freq"])
         allele_weights.append(min(highest_decile * 100 / ((10**6) / distance), 1))
