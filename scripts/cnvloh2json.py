@@ -381,7 +381,7 @@ def add_qc_dlrs(cnvloh_dict):
     cnvloh_dict['metadata']["dlrs_interquartile"] = dlrsiq['spread'].std()/sqrt(2)
     return cnvloh_dict
 
-def generate_cnvloh_json(sample_dir, sample_name, modeled_seg_file, cnv_subseg_file, loh_calls_file, cnv_reads_file=None, data_type = "WES", case_name=None, cnv_params=None, software="GATK", software_version=None, sample_type=None):
+def generate_cnvloh_json(sample_dir, sample_name, modeled_seg_file, cnv_subseg_file, loh_calls_file, cnv_reads_file=None, data_type = "WES", case_name=None, cnv_params=None, software="GATK", software_version=None, sample_type=None, sample_sex:str=None):
     if (data_type.upper() == "WES" or data_type.upper() == "WGS") and software.upper() == "GATK":
         json_output_str = f'{sample_name}_cnvloh_output_{data_type}-GATK.json'
         min_seg_length=25000000
@@ -401,6 +401,8 @@ def generate_cnvloh_json(sample_dir, sample_name, modeled_seg_file, cnv_subseg_f
         raise ValueError(f'The specified data type and software combination is not supported: {data_type},{software}.')
     segment_array, recenter_value = recenter_cnvloh_segments(segment_array,min_seg_length=min_seg_length,max_loh=max_loh)
     metadata_dict={'data_type':data_type,'software':software,'software_version':software_version,'case_name':case_name,'sample_name':sample_name,'sample_type':sample_type,'analysis_parameters':cnv_params,'recentering_value':recenter_value}
+    if sample_sex is not None:
+        metadata_dict['sex']=sample_sex
     cnvloh_dict = {'metadata':metadata_dict, 'segments':segment_array}
     cnvloh_dict = add_qc_dlrs(cnvloh_dict)
     json_string = json.dumps(cnvloh_dict,indent=1)
@@ -421,6 +423,7 @@ def run_cnv2json_argparser():
     parser.add_argument('--case-name', help='(Optional) Name of the case to which the sample belongs.', default=None)
     parser.add_argument('--software', help='Software used to create data.', default='GATK')
     parser.add_argument('--version', help="Version of software used to create data.", default=None)
+    parser.add_argument('--sex', help="Sex of sample (used to determine X/Y baseline.)", choices=['male','female','unknown'])
     parser.add_argument('--data-type', help='Type of input data', default='WES')
     parser.add_argument('--parameters', help='String of parameters used to run software.', default=None)
     return parser
@@ -442,4 +445,5 @@ if __name__ == '__main__':
     loh_calls_file = args.hets_file
     data_type = args.data_type
     cnv_reads_file = args.counts_file
-    generate_cnvloh_json(sample_dir, sample_name, modeled_seg_file, cnv_subseg_file, loh_calls_file, cnv_reads_file, data_type, case_name, cnv_params, software, software_version, sample_type)
+    sex = args.sex
+    generate_cnvloh_json(sample_dir, sample_name, modeled_seg_file, cnv_subseg_file, loh_calls_file, cnv_reads_file, data_type, case_name, cnv_params, software, software_version, sample_type, sex)
